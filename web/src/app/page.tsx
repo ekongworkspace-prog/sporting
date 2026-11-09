@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   ArrowRight,
   CalendarDays,
@@ -10,6 +11,12 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Your Football Career, Connected",
+  description:
+    "Connect your football career on Turfing. Discover clubs, organise fixtures, compete in tournaments, manage contracts, and track payments in one place.",
+};
 
 const features = [
   {

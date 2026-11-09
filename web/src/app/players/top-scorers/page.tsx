@@ -1,5 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowLeft, Goal } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Top Goal Scorers",
+  description:
+    "See the leading goal scorers and their clubs on Turfing's football leaderboard.",
+};
 
 const scorers = [
   ["1", "Emmanuel Okon", "Akwa United Stars", 14],

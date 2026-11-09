@@ -1,5 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowLeft, Trophy } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "League Standings",
+  description:
+    "Follow club positions, matches played, goal difference and points in the Turfing league table.",
+};
 
 const teams = [
   ["1", "Akwa United Stars", 18, 43],

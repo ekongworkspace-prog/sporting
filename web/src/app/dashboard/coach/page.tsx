@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { ProfileForm } from "@/features/profiles/ProfileForm";
+
+export const metadata: Metadata = {
+  title: "Coach Profile",
+  description: "Create and manage your coach profile on Turfing.",
+};
 
 export default function CoachProfilePage() {
   return (

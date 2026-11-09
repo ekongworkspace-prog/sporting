@@ -1,5 +1,12 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowLeft, ArrowRight, CalendarDays, Trophy, Users } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Tournaments",
+  description:
+    "Explore football tournaments on Turfing, including team registrations, fixtures, brackets and knockout stages.",
+};
 
 const tournaments = [
   { name: "Nation Cup", stage: "Quarter finals", teams: 16, date: "Starts 18 Nov" },
