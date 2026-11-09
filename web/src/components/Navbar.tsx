@@ -5,8 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 
 const logoUrl =
-  "https://res.cloudinary.com/blvyeese/image/upload/v1794181207/Turf.club_Soccer_Motion_Logo.png";
-
+"https://res.cloudinary.com/blvyeese/image/upload/v1794247512/logo.png";
 const links = [
   { href: "/dashboard/player", label: "Player" },
   { href: "/dashboard/coach", label: "Coach" },
