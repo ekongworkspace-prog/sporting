@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     template: "%s | Turfing",
   },
   description:
-    "Turfing brings players, clubs, fixtures, tournaments and football communities together.",
+    "Brings players, clubs, fixtures, tournaments and football communities together.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
