@@ -18,6 +18,8 @@ import { storeRoutes } from "./modules/store/store.routes.js";
 import { env } from "./config/env.js";
 export function createApp() {
   const app = express();
+   app.set("trust proxy", 1); 
+
   app.use(
     cors({
       origin: [env.FRONTEND_URL, "https://www.turfing.club"],
@@ -27,10 +29,28 @@ export function createApp() {
   // 1. Core global middleware first (Logging & Parsing)
   app.use(pinoHttp({ logger }));
   app.use("/api/payments", paymentWebhookRoutes); // Keep webhook before JSON body parser if it needs raw bodies
+  
+  
   // 🔥 FIXED: Moved JSON parser up here so request.body is available for BetterAuth
   app.use(express.json({ limit: "1mb" }));
   app.use(apiRateLimit);
+
+
   // 2. BetterAuth Route Handler (Now request.body will be defined)
+  // app.all("/api/auth/*splat", async (request, response) => {
+  //   const url = new URL(request.originalUrl, "https://www.turfing.club");
+  //   const authRequest = new Request(url, {
+  //     method: request.method,
+  //     headers: new Headers(request.headers as Record<string, string>),
+  //     body: ["GET", "HEAD"].includes(request.method) ? undefined : JSON.stringify(request.body),
+  //   });
+  //   return auth.handler(authRequest).then((authResponse) => {
+  //     response.status(authResponse.status);
+  //     authResponse.headers.forEach((value, key) => response.setHeader(key, value));
+  //     return authResponse.arrayBuffer().then((body) => response.send(Buffer.from(body)));
+  //   });
+  // });
+    // 2. BetterAuth Route Handler (Now request.body will be defined)
   app.all("/api/auth/*splat", async (request, response) => {
     const url = new URL(request.originalUrl, "https://www.turfing.club");
     const authRequest = new Request(url, {
@@ -38,12 +58,34 @@ export function createApp() {
       headers: new Headers(request.headers as Record<string, string>),
       body: ["GET", "HEAD"].includes(request.method) ? undefined : JSON.stringify(request.body),
     });
+    
     return auth.handler(authRequest).then((authResponse) => {
       response.status(authResponse.status);
+      
+      // Copy internal auth headers
       authResponse.headers.forEach((value, key) => response.setHeader(key, value));
+      
+      // 🔥 FIX CORS: Dynamically append CORS headers to the manual response stream
+      const origin = request.headers.origin;
+      const allowedOrigins = [env.FRONTEND_URL, "https://www.turfing.club", "https://turfing.club"];
+      
+      if (origin && allowedOrigins.includes(origin)) {
+        response.setHeader("Access-Control-Allow-Origin", origin);
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+        response.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+      }
+      
+      // Handle preflight OPTIONS explicitly inside this custom handler
+      if (request.method === "OPTIONS") {
+        return response.sendStatus(204);
+      }
+
       return authResponse.arrayBuffer().then((body) => response.send(Buffer.from(body)));
     });
   });
+
+  
   // 3. Regular Application Routes
   app.get("/", (_request, response) => {
     response.json({
@@ -51,12 +93,15 @@ export function createApp() {
       health: "/api/health",
     });
   });
+
+
   app.get("/api/health", (_request, response) => {
     response.json({ status: "ok" });
   });
   app.get("/.well-known/appspecific/com.chrome.devtools.json", (_request, response) => {
     response.json({});
   });
+
   app.use("/api/profiles", profileRoutes);
   app.use("/api/wallets", walletRoutes);
   app.use("/api/clubs", clubRoutes);
