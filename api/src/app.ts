@@ -19,12 +19,12 @@ import { env } from "./config/env.js";
 
 export function createApp() {
   const app = express();
-//   app.use(
-//   cors({
-//     origin: [env.FRONTEND_URL, "https://www.turfing.club"],
-//     credentials: true,
-//   }),
-// );
+  app.use(
+  cors({
+    origin: [env.FRONTEND_URL, "https://www.turfing.club"],
+    credentials: true,
+  }),
+);
 
   // 1. Core global middleware first (Logging & Parsing)
   app.use(pinoHttp({ logger }));
@@ -36,7 +36,7 @@ export function createApp() {
 
   // 2. BetterAuth Route Handler (Now request.body will be defined)
   app.all("/api/auth/*splat", async (request, response) => {
-    const url = new URL(request.originalUrl, "http://localhost");
+    const url = new URL(request.originalUrl, "https://www.turfing.club");
     const authRequest = new Request(url, {
       method: request.method,
       headers: new Headers(request.headers as Record<string, string>),
