@@ -18,6 +18,8 @@ import { storeRoutes } from "./modules/store/store.routes.js";
 import { env } from "./config/env.js";
 export function createApp() {
   const app = express();
+   app.set("trust proxy", 1); 
+
   app.use(
     cors({
       origin: [env.FRONTEND_URL, "https://www.turfing.club"],
