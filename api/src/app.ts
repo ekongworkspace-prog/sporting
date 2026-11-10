@@ -70,6 +70,6 @@ export function createApp() {
   app.use(errorHandler);
   return app;
 }
-// 🔥 VERCEL COMPATIBILITY: Initialize and export the app instance as the default export
+
 const app = createApp();
 export default app;
