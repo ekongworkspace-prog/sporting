@@ -16,24 +16,20 @@ import { tournamentRoutes } from "./modules/tournaments/tournament.routes.js";
 import { betRoutes } from "./modules/bets/bet.routes.js";
 import { storeRoutes } from "./modules/store/store.routes.js";
 import { env } from "./config/env.js";
-
 export function createApp() {
   const app = express();
   app.use(
-  cors({
-    origin: [env.FRONTEND_URL, "https://www.turfing.club"],
-    credentials: true,
-  }),
-);
-
+    cors({
+      origin: [env.FRONTEND_URL, "https://www.turfing.club"],
+      credentials: true,
+    }),
+  );
   // 1. Core global middleware first (Logging & Parsing)
   app.use(pinoHttp({ logger }));
   app.use("/api/payments", paymentWebhookRoutes); // Keep webhook before JSON body parser if it needs raw bodies
-  
   // 🔥 FIXED: Moved JSON parser up here so request.body is available for BetterAuth
-  app.use(express.json({ limit: "1mb" })); 
+  app.use(express.json({ limit: "1mb" }));
   app.use(apiRateLimit);
-
   // 2. BetterAuth Route Handler (Now request.body will be defined)
   app.all("/api/auth/*splat", async (request, response) => {
     const url = new URL(request.originalUrl, "https://www.turfing.club");
@@ -48,7 +44,6 @@ export function createApp() {
       return authResponse.arrayBuffer().then((body) => response.send(Buffer.from(body)));
     });
   });
-
   // 3. Regular Application Routes
   app.get("/", (_request, response) => {
     response.json({
@@ -56,7 +51,6 @@ export function createApp() {
       health: "/api/health",
     });
   });
-
   app.get("/api/health", (_request, response) => {
     response.json({ status: "ok" });
   });
@@ -73,7 +67,9 @@ export function createApp() {
   app.use("/api/tournaments", tournamentRoutes);
   app.use("/api/bets", betRoutes);
   app.use("/api/store", storeRoutes);
-
   app.use(errorHandler);
   return app;
 }
+// 🔥 VERCEL COMPATIBILITY: Initialize and export the app instance as the default export
+const app = createApp();
+export default app;
