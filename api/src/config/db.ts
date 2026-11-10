@@ -1,11 +1,32 @@
-import mongoose from "mongoose";
+import { MongoClient, type Db } from "mongodb";
 import { env } from "./env.js";
 
-export async function connectDatabase(): Promise<void> {
-  mongoose.set("strictQuery", true);
-  await mongoose.connect(env.MONGODB_URI);
-}
+export const mongoClient = new MongoClient(env.MONGODB_URI);
 
-export async function disconnectDatabase(): Promise<void> {
-  await mongoose.disconnect();
-}
+let database: Db | null = null;
+
+export const connectDatabase = async (): Promise<Db> => {
+  if (database) {
+    return database;
+  }
+
+  await mongoClient.connect();
+
+  database = mongoClient.db(env.MONGODB_DATABASE);
+
+  await database.command({ ping: 1 });
+
+  console.log(`MongoDB connected: ${env.MONGODB_DATABASE}`);
+
+  return database;
+};
+
+export const getDatabase = (): Db => {
+  if (!database) {
+    throw new Error(
+      "Database has not been initialized. Call connectDatabase() first.",
+    );
+  }
+
+  return database;
+};

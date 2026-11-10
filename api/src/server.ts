@@ -1,4 +1,4 @@
-import { connectDatabase, disconnectDatabase } from "./config/db.js";
+import { connectDatabase,  } from "./config/db.js";
 import { env } from "./config/env.js";
 import { logger } from "./core/logger.js";
 
@@ -12,7 +12,7 @@ const server = app.listen(env.PORT, () => {
 
 async function shutdown(): Promise<void> {
   server.close();
-  await disconnectDatabase();
+  // await disconnectDatabase();
   process.exit(0);
 }
 
