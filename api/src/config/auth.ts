@@ -1,16 +1,16 @@
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import mongoose from "mongoose";
 import { env } from "./env.js";
 import { emailOTP } from "better-auth/plugins";
 import { sendOtpEmail } from "../modules/emails/emails.service.js";
+import { mongoClient } from "./db.js";
 
+const database = mongoClient.db(env.MONGODB_DATABASE);
 
 export const auth = betterAuth({
-  database: mongodbAdapter(mongoose.connection.db!),
-  // secret: env.BETTER_AUTH_SECRET,
-  // baseURL: env.BETTER_AUTH_URL,
-  // trustedOrigins: [env.WEB_ORIGIN],
+ database: mongodbAdapter(database, {
+    client: mongoClient,
+  }),
   
   socialProviders: {
     google: {
@@ -30,7 +30,10 @@ export const auth = betterAuth({
 
   secret: env.BETTER_AUTH_SECRET,
 
-  trustedOrigins: [env.WEB_ORIGIN],
+  trustedOrigins: [
+    "https://turfing.club",
+    "https://www.turfing.club",
+  ],
 
   emailAndPassword: {
     enabled: true,
