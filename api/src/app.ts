@@ -65,7 +65,7 @@ export function createApp() {
       authResponse.headers.forEach((value, key) => response.setHeader(key, value));
       
       const origin = request.headers.origin;
-      const allowedOrigins = [env.FRONTEND_URL, "https://www.turfing.club", "https://turfing.club"];
+      const allowedOrigins = ["https://www.turfing.club", "https://turfing.club"];
       
       if (origin && allowedOrigins.includes(origin)) {
         response.setHeader("Access-Control-Allow-Origin", origin);
