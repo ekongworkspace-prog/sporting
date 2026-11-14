@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const apiOrigin = process.env.API_PROXY_ORIGIN ?? "http://localhost:5000";
+const apiOrigin = process.env.API_BASE_URL ?? "http://localhost:5000";
 
 const nextConfig: NextConfig = {
   images: {
