@@ -34,7 +34,8 @@ export default function SignInPage() {
       const result = await authClient.signIn.social({
         provider: "google",
        callbackURL: `${window.location.origin}/dashboard`,
-        errorCallbackURL: "/sign-in",
+      
+         errorCallbackURL: `${window.location.origin}/sign-in`,
       });
 
       console.log("Google sign-in result:", result);
