@@ -30,9 +30,10 @@ export const auth = betterAuth({
 
   secret: env.BETTER_AUTH_SECRET,
 
-  trustedOrigins: [
+ trustedOrigins: [
     "https://turfing.club",
-    "https://www.turfing.club",
+    "https://turfing.club",
+    "https://sporting-puce-git-main.vercel.app",
   ],
 
   emailAndPassword: {
