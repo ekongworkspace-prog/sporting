@@ -5,12 +5,16 @@ import Image from "next/image";
 import { useState } from "react";
 
 const logoUrl =
-"https://res.cloudinary.com/blvyeese/image/upload/v1794247512/logo.png";
+"https://res.cloudinary.com/blvyeese/image/upload/v1794351654/Lime_Turfing_Club_Sports_Logo.png"
+
+
+
 const links = [
   { href: "/dashboard/player", label: "Player" },
   { href: "/dashboard/coach", label: "Coach" },
   { href: "/dashboard/referee", label: "Referee" },
   { href: "/wallet", label: "Wallet" },
+  { href: "/knowledge-base", label: "Knowledge Base" },
   { href: "/contact", label: "Contact" },
 ];
 

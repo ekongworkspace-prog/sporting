@@ -3,13 +3,15 @@ import Image from "next/image";
 import { ArrowUpRight, Mail } from "lucide-react";
 
 const logoUrl =
-  "https://res.cloudinary.com/blvyeese/image/upload/v1794181207/Turf.club_Soccer_Motion_Logo.png";
+"https://res.cloudinary.com/blvyeese/image/upload/v1794351654/Lime_Turfing_Club_Sports_Logo.png"
+
 
 const platformLinks = [
   { href: "/dashboard/player", label: "Players" },
   { href: "/dashboard/coach", label: "Coaches" },
   { href: "/dashboard/referee", label: "Referees" },
   { href: "/wallet", label: "Wallet" },
+  { href: "/knowledge-base", label: "Knowledge Base" },
 ];
 
 const companyLinks = [

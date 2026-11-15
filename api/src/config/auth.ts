@@ -30,7 +30,10 @@ export const auth = betterAuth({
 
   secret: env.BETTER_AUTH_SECRET,
 
-  trustedOrigins: [env.WEB_ORIGIN],
+  trustedOrigins: [
+    "https://turfing.club",
+    "https://www.turfing.club",
+  ],
 
   emailAndPassword: {
     enabled: true,
