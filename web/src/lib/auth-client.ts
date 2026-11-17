@@ -1,7 +1,7 @@
 import { createAuthClient } from "better-auth/react";
 import { emailOTPClient } from "better-auth/client/plugins";
 
-const baseURL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+const baseURL = "https://sporting-puce.vercel.app";
 
 export const authClient = createAuthClient({
   baseURL,
