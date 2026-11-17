@@ -5,8 +5,6 @@ const baseURL = "https://sporting-puce.vercel.app";
 
 export const authClient = createAuthClient({
   baseURL,
-  fetchOptions: {
-    credentials: "include",
-  },
+
   plugins: [emailOTPClient()], 
 });
