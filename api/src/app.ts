@@ -3,6 +3,7 @@ import cors from "cors";
 import { pinoHttp } from "pino-http";
 import { connectDatabase } from "./config/db.js"; // 🔥 Added connection logic for Vercel
 import { auth } from "./config/auth.js";
+import { toNodeHandler } from "better-auth/node";
 import { logger } from "./core/logger.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { apiRateLimit } from "./middleware/rateLimit.js";
@@ -28,6 +29,9 @@ export function createApp() {
       credentials: true,
     }),
   );
+  // Better Auth must be mounted before express.json() 
+app.all("/api/auth/*splat", toNodeHandler(auth));
+
 
   // 🔥 FIX FOR VERCEL: Ensure DB is connected before processing any requests or handlers
   app.use(async (_req, _res, next) => {
@@ -46,41 +50,7 @@ export function createApp() {
   app.use(express.json({ limit: "1mb" }));
   app.use(apiRateLimit);
 
-  // 2. BetterAuth Route Handler
-  app.all("/api/auth/*splat", async (request, response) => {
-    // 🔥 FIX CORS & HOST: Dynamically extract origin protocols and domains to match BetterAuth settings
-    const protocol = request.secure || request.headers["x-forwarded-proto"] === "https" ? "https" : "http";
-    const host = request.headers["x-forwarded-host"] || request.headers.host || "turfing.club";
-    const url = new URL(request.originalUrl, `${protocol}://${host}`);
 
-    const authRequest = new Request(url, {
-      method: request.method,
-      headers: new Headers(request.headers as Record<string, string>),
-      body: ["GET", "HEAD"].includes(request.method) ? undefined : JSON.stringify(request.body),
-    });
-    
-    return auth.handler(authRequest).then((authResponse) => {
-      response.status(authResponse.status);
-      
-      authResponse.headers.forEach((value, key) => response.setHeader(key, value));
-      
-      const origin = request.headers.origin;
-      const allowedOrigins = ["https://www.turfing.club", "https://turfing.club"];
-      
-      if (origin && allowedOrigins.includes(origin)) {
-        response.setHeader("Access-Control-Allow-Origin", origin);
-        response.setHeader("Access-Control-Allow-Credentials", "true");
-        response.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-      }
-      
-      if (request.method === "OPTIONS") {
-        return response.sendStatus(204);
-      }
-
-      return authResponse.arrayBuffer().then((body) => response.send(Buffer.from(body)));
-    });
-  });
 
   // 3. Regular Application Routes
   app.get("/", (_request, response) => {
@@ -93,9 +63,7 @@ export function createApp() {
   app.get("/api/health", (_request, response) => {
     response.json({ status: "ok" });
   });
-  app.get("/.well-known/appspecific/com.chrome.devtools.json", (_request, response) => {
-    response.json({});
-  });
+ 
 
   app.use("/api/profiles", profileRoutes);
   app.use("/api/wallets", walletRoutes);
