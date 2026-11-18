@@ -4,7 +4,7 @@ import { logger } from "../core/logger.js";
 
 export const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
   const statusCode = error instanceof HttpError ? error.statusCode : 500;
-  const code = error instanceof HttpError ? error.code : "INTERNAL_ERROR";
+  const code = error instanceof HttpError ? error.code : `INTERNAL_SERVER_ERROR ${error.code || ""}`;
 
   if (statusCode >= 500) {
     logger.error(error);
@@ -13,7 +13,7 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
   response.status(statusCode).json({
     error: {
       code,
-      message: statusCode >= 500 ? "Internal server error" : error.message,
+      message:  error.message,
     },
   });
 };

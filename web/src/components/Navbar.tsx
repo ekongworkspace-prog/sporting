@@ -3,23 +3,47 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 const logoUrl =
-"https://res.cloudinary.com/blvyeese/image/upload/v1794351654/Lime_Turfing_Club_Sports_Logo.png"
-
-
+"https://res.cloudinary.com/blvyeese/image/upload/v1794351654/Lime_Turfing_Club_Sports_Logo.png";
 
 const links = [
-  { href: "/dashboard/player", label: "Player" },
-  { href: "/dashboard/coach", label: "Coach" },
-  { href: "/dashboard/referee", label: "Referee" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/tournaments", label: "Tournaments" },
+  { href: "/standings", label: "Standings" },
+  { href: "/players/top-scorers", label: "Top scorers" },
   { href: "/wallet", label: "Wallet" },
-  { href: "/knowledge-base", label: "Knowledge Base" },
   { href: "/contact", label: "Contact" },
 ];
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
+  const { data: session, isPending } = authClient.useSession();
+  const router = useRouter();
+
+  async function handleSignOut() {
+    setSigningOut(true);
+    setSignOutError("");
+
+    try {
+      const { error } = await authClient.signOut();
+      if (error) {
+        setSignOutError(error.message ?? "Unable to sign out");
+        return;
+      }
+
+      setOpen(false);
+      router.replace("/sign-in");
+    } catch {
+      setSignOutError("Unable to sign out");
+    } finally {
+      setSigningOut(false);
+    }
+  }
 
   return (
     <header className="border-b border-zinc-200 bg-white">
@@ -42,6 +66,23 @@ export function Navbar() {
           {links.map((link) => (
             <Link key={link.href} href={link.href} className="hover:text-zinc-600">
               {link.label}
+            </Link>
+          ))}
+        </div>
+
+        <div className="hidden items-center gap-4 md:flex">
+          {!isPending && (session?.user ? (
+            <button
+              className="rounded-lg bg-zinc-950 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700 disabled:opacity-60"
+              disabled={signingOut}
+              onClick={handleSignOut}
+              type="button"
+            >
+              {signingOut ? "Signing out..." : "Log out"}
+            </button>
+          ) : (
+            <Link className="text-sm font-semibold hover:text-zinc-600" href="/sign-in">
+              Sign in
             </Link>
           ))}
         </div>
@@ -76,7 +117,26 @@ export function Navbar() {
             {link.label}
           </Link>
         ))}
+        {!isPending && (session?.user ? (
+          <button
+            className="rounded-md px-2 py-3 text-left text-sm font-semibold hover:bg-zinc-100 disabled:opacity-60"
+            disabled={signingOut}
+            onClick={handleSignOut}
+            type="button"
+          >
+            {signingOut ? "Signing out..." : "Log out"}
+          </button>
+        ) : (
+          <Link
+            className="rounded-md px-2 py-3 text-sm font-semibold hover:bg-zinc-100"
+            href="/sign-in"
+            onClick={() => setOpen(false)}
+          >
+            Sign in
+          </Link>
+        ))}
       </div>
+      {signOutError && <p className="px-4 pb-2 text-sm text-red-600 md:px-6" role="alert">{signOutError}</p>}
     </header>
   );
 }
