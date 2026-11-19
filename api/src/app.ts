@@ -23,14 +23,20 @@ export function createApp() {
   const app = express();
   app.set("trust proxy", 1);
 
-  app.use(
+   app.use(
     cors({
-      origin: [env.FRONTEND_URL, "https://www.turfing.club", "https://turfing.club"],
+      origin: [
+        "https://www.turfing.club",
+        "https://turfing.club",
+        "http://localhost:3000",
+      ],
       credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
     }),
   );
 
-  // 🔥 FIX FOR VERCEL: Ensure DB is connected before processing any requests or handlers
+  
   app.use(async (_req, _res, next) => {
     try {
       await connectDatabase();
@@ -43,8 +49,6 @@ export function createApp() {
   
   // Better Auth must be mounted before express.json() 
   app.all("/api/auth/*splat", toNodeHandler(auth));
-
-
 
 
   // 1. Core global middleware first (Logging & Parsing)
