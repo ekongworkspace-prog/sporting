@@ -6,6 +6,10 @@ export interface CloudinaryImage {
 }
 
 export interface Profile {
+  _id?: string;
+  userId?: string;
+  role?: ProfileRole;
+  username?: string;
   email?: string;
   fullName?: string;
   country?: string;
