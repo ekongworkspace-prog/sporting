@@ -160,6 +160,7 @@ export function ProfileForm({ role }: { role: ProfileRole }) {
   const saveMutation = useMutation({
     mutationFn: (body: Record<string, unknown>) => apiFetch<{ profile: Profile }>(`/api/profiles/${role}/me`, {
       method: "PUT",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     }),
