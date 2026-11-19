@@ -26,4 +26,18 @@ export interface Profile {
   clubImages?: CloudinaryImage[];
   invitedPlayerEmails?: string[];
   profilePicture?: CloudinaryImage;
+  club?: string;
+  transferStatus?: string;
+  goals?: number;
+  assists?: number;
+  tournaments?: number;
+  starRating?: number;
+  marketValue?: number;
+  weakFoot?: number;
+  strength?: number;
+  stamina?: number;
+  contractLength?: number;
 }
+
+
+

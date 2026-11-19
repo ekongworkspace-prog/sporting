@@ -1,10 +1,10 @@
+import { createApp } from "./app.js";
 import { connectDatabase,  } from "./config/db.js";
 import { env } from "./config/env.js";
 import { logger } from "./core/logger.js";
 
 await connectDatabase();
 
-const { createApp } = await import("./app.js");
 const app = createApp();
 const server = app.listen(env.PORT, () => {
   logger.info({ port: env.PORT }, "Football API listening");

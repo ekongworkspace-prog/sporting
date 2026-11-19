@@ -55,7 +55,7 @@ export const auth = betterAuth({
 
       allowedAttempts: 3,
 
-      async sendVerificationOTP( { email, otp, type = "" },user) {
+      async sendVerificationOTP( { email, otp, type  },user) {
         await sendOtpEmail({
           email,
           otp,

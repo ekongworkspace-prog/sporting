@@ -5,7 +5,7 @@ import { Avatar, Input, Label, TextArea, TextField } from "@heroui/react";
 import { UserRound } from "lucide-react";
 import { ProfileSelect } from "./ProfileSelect";
 import { localGovernments, nigerianStates } from "./profile.constants";
-import type { CloudinaryImage, ProfileRole } from "./profile.types";
+import type { CloudinaryImage, ProfileRole } from "../../types/profile.types";
 
 interface StepProps {
   values: Record<string, string>;

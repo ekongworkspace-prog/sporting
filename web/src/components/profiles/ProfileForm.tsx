@@ -30,47 +30,8 @@ import {
 } from "lucide-react";
 import { ProfileSummary } from "./ProfileSummary";
 import { ProfilePictureUpload } from "./ProfilePictureUpload";
-
-type ProfileRole = "player" | "coach" | "owner" | "referee";
-
-interface Profile {
-  email?: string;
-  fullName?: string;
-  country?: string;
-  age?: number;
-  nin?: string;
-  state?: string;
-  localGovernment?: string;
-  address?: string;
-  credentialType?: string;
-  credentialNumber?: string;
-  position?: string;
-  strongFoot?: string;
-  heightCm?: number;
-  teamsCoached?: string[];
-  licenseNumber?: string;
-  clubName?: string;
-  clubLocation?: string;
-  clubImages?: CloudinaryImage[];
-  invitedPlayerEmails?: string[];
-  profilePicture?: CloudinaryImage;
-  club?: string;
-  transferStatus?: string;
-  goals?: number;
-  assists?: number;
-  tournaments?: number;
-  starRating?: number;
-  marketValue?: number;
-  weakFoot?: number;
-  strength?: number;
-  stamina?: number;
-  contractLength?: number;
-}
-
-interface CloudinaryImage {
-  url: string;
-  publicId: string;
-}
+import type { CloudinaryImage, Profile, ProfileRole } from "@/types/profile.types";
+import { useGetProfileByRole } from "@/features/profiles/hooks/use-profiles";
 
 const nigerianStates = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
@@ -138,7 +99,7 @@ function ProfileSelect({
   );
 }
 
-export function ProfileForm() {
+export function ProfileForm({ role }: { role: ProfileRole }) {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const queryClient = useQueryClient();
@@ -158,21 +119,12 @@ export function ProfileForm() {
     }
   }, [isPending, session, router]);
 
-  const sessionRole = session?.user
-    ? (session.user as typeof session.user & { role: UserRole }).role.toLowerCase()
-    : "";
-  const userRoleResolved = ["player", "coach", "owner", "referee"].includes(sessionRole)
-    ? sessionRole as ProfileRole
-    : "";
-  const roleResolved = userRoleResolved;
+  
 
-  const profileQuery = useQuery({
-    queryKey: ["profiles", userRoleResolved],
-    queryFn: () => apiFetch<{ profile: Profile | null }>(`/api/profiles/${userRoleResolved}/me`),
-    enabled: Boolean(userRoleResolved),
-    retry: false,
-  });
-  const profile = profileQuery.data?.profile;
+ 
+  const { data: profile, isLoading: profileLoading, isError: profileError } = useGetProfileByRole(role);
+
+ 
 
   useEffect(() => {
     if (!profile) return;
@@ -180,8 +132,8 @@ export function ProfileForm() {
       setSavedProfile(profile);
       setSaved(true);
       setValues({
-        email: profile.email ?? "",
-        fullName: profile.fullName ?? "",
+        email: profile.email ?? session?.user?.email ?? "",
+        fullName: profile.fullName ?? session?.user?.name ?? "",
         country: profile.country ?? "Nigeria",
         age: profile.age?.toString() ?? "",
         nin: "",
@@ -206,7 +158,7 @@ export function ProfileForm() {
   }, [profile]);
 
   const saveMutation = useMutation({
-    mutationFn: (body: Record<string, unknown>) => apiFetch<{ profile: Profile }>(`/api/profiles/${userRoleResolved}/me`, {
+    mutationFn: (body: Record<string, unknown>) => apiFetch<{ profile: Profile }>(`/api/profiles/${role}/me`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -221,8 +173,8 @@ export function ProfileForm() {
         credentialNumber: data.profile.credentialNumber ?? profile?.credentialNumber,
       }));
       setError("");
-      void queryClient.invalidateQueries({ queryKey: ["profiles", userRoleResolved] });
-      if (roleResolved === "owner") {
+      void queryClient.invalidateQueries({ queryKey: ["profiles", role] });
+      if (role === "owner") {
         const emails = values.invitedPlayerEmails?.split(",").map((email) => email.trim()).filter(Boolean) ?? [];
         if (emails.length) {
           void apiFetch("/api/profiles/club-invitations", {
@@ -244,13 +196,11 @@ export function ProfileForm() {
     setValues((current) => ({ ...current, [name]: value }));
   }
 
-
-
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setSaved(false);
-    const credentialNumber = values.credentialNumber || profile?.credentialNumber || (roleResolved === "player" ? values.nin : "");
+    const credentialNumber = values.credentialNumber || profile?.credentialNumber || (role === "player" ? values.nin : "");
     const body: Record<string, unknown> = {
 
       fullName: values.fullName || profile?.fullName,
@@ -264,14 +214,14 @@ export function ProfileForm() {
 
     };
     if (profilePicture.url && profilePicture.publicId) body.profilePicture = profilePicture;
-    if (roleResolved === "player") {
+    if (role === "player") {
       body.position = values.position || undefined;
       body.strongFoot = values.strongFoot || undefined;
       body.heightCm = values.heightCm ? Number(values.heightCm) : undefined;
     }
-    if (roleResolved === "coach") body.teamsCoached = values.teamsCoached?.split(",").map((item) => item.trim()).filter(Boolean);
-    if (roleResolved === "referee") body.licenseNumber = values.licenseNumber;
-    if (roleResolved === "owner") {
+    if (role === "coach") body.teamsCoached = values.teamsCoached?.split(",").map((item) => item.trim()).filter(Boolean);
+    if (role === "referee") body.licenseNumber = values.licenseNumber;
+    if (role === "owner") {
       body.clubName = values.clubName;
       body.clubLocation = values.clubLocation;
       body.clubImages = clubImages;
@@ -281,29 +231,29 @@ export function ProfileForm() {
   }
 
   const needsSetup = profile === null;
-  const isClubRole = roleResolved === "coach" || roleResolved === "owner";
-  const steps = ["Role & identity", "Location", "Verification", ...(roleResolved === "player" ? ["Football details"] : isClubRole ? ["Club setup"] : ["Professional details"])];
+  const isClubRole = role === "coach" || role === "owner";
+  const steps = ["Role & identity", "Location", "Verification", ...(role === "player" ? ["Football details"] : isClubRole ? ["Club setup"] : ["Professional details"])];
 
-  if (profileQuery.isLoading || isPending) return <p>Loading profile...</p>;
-  if (profileQuery.isError) return <p className="text-sm text-red-600">{profileQuery.error.message}</p>;
+  if (profileLoading || isPending) return <p>Loading profile...</p>;
+  if (profileError) return <p className="text-sm text-red-600">{profileError}</p>;
 
   const requiredStepOneComplete = Boolean(
     (values.fullName || profile?.fullName) &&
     (values.country || profile?.country) &&
-    roleResolved,
+    role,
   );
   const requiredStepTwoComplete = Boolean(
     (values.localGovernment
       || profile?.localGovernment) &&
     (values.address || profile?.address) &&
-    roleResolved,
+    role,
   );
 
   if (saved && savedProfile) {
     return (
       <ProfileSummary
         profile={savedProfile}
-        role={roleResolved}
+        role={role}
         profilePicture={profilePicture}
         onEdit={() => {
           setSaved(false);
@@ -359,7 +309,7 @@ export function ProfileForm() {
               {profilePicture.url ? <Avatar.Image src={profilePicture.url} alt="Profile" /> : session?.user.image ? <Avatar.Image src={session.user.image} alt="Profile" /> : null}
               <Avatar.Fallback><UserRound /></Avatar.Fallback>
             </Avatar>
-            <ProfileSelect label="Role" value={roleResolved} isDisabled options={[
+            <ProfileSelect label="Role" value={role} isDisabled options={[
               { value: "player", label: "Player" },
               { value: "coach", label: "Coach" },
               { value: "owner", label: "Club owner" },
@@ -418,7 +368,7 @@ export function ProfileForm() {
           </div>
         )}
 
-        {step === 3 && roleResolved === "player" && (
+        {step === 3 && role === "player" && (
           <div className="grid gap-4">
             <TextField isRequired>
               <Label>Age</Label>
@@ -443,7 +393,7 @@ export function ProfileForm() {
           </div>
         )}
 
-        {step === 3 && roleResolved === "coach" && (
+        {step === 3 && role === "coach" && (
           <div className="grid gap-4">
             <TextField>
               <Label>Teams coached (comma-separated)</Label>
@@ -456,7 +406,7 @@ export function ProfileForm() {
           </div>
         )}
 
-        {step === 3 && roleResolved === "owner" && (
+        {step === 3 && role === "owner" && (
           <div className="grid gap-4">
             <TextField isRequired>
               <Label>Club name</Label>
@@ -482,7 +432,7 @@ export function ProfileForm() {
           </div>
         )}
 
-        {step === 3 && roleResolved === "referee" && (
+        {step === 3 && role === "referee" && (
           <TextField>
             <Label>License number</Label>
             <Input className="ring-green-600" value={values.licenseNumber ?? ""} onChange={(event) => setValue("licenseNumber", event.target.value)} />

@@ -21,7 +21,7 @@ import { env } from "./config/env.js";
 
 export function createApp() {
   const app = express();
-  app.set("trust proxy", 1); 
+  app.set("trust proxy", 1);
 
   app.use(
     cors({
@@ -29,9 +29,6 @@ export function createApp() {
       credentials: true,
     }),
   );
-  // Better Auth must be mounted before express.json() 
-app.all("/api/auth/*splat", toNodeHandler(auth));
-
 
   // 🔥 FIX FOR VERCEL: Ensure DB is connected before processing any requests or handlers
   app.use(async (_req, _res, next) => {
@@ -43,10 +40,17 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
     }
   });
 
+  
+  // Better Auth must be mounted before express.json() 
+  app.all("/api/auth/*splat", toNodeHandler(auth));
+
+
+
+
   // 1. Core global middleware first (Logging & Parsing)
   app.use(pinoHttp({ logger }));
-  app.use("/api/payments", paymentWebhookRoutes); 
-  
+  app.use("/api/payments", paymentWebhookRoutes);
+
   app.use(express.json({ limit: "1mb" }));
   app.use(apiRateLimit);
 
@@ -63,7 +67,7 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
   app.get("/api/health", (_request, response) => {
     response.json({ status: "ok" });
   });
- 
+
 
   app.use("/api/profiles", profileRoutes);
   app.use("/api/wallets", walletRoutes);
@@ -75,10 +79,9 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
   app.use("/api/tournaments", tournamentRoutes);
   app.use("/api/bets", betRoutes);
   app.use("/api/store", storeRoutes);
-  
+
   app.use(errorHandler);
   return app;
 }
 
-const app = createApp();
-export default app;
+

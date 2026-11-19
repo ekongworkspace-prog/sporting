@@ -4,41 +4,7 @@ import { authClient } from "@/lib/auth-client";
 import { Avatar, Button } from "@heroui/react";
 import { CheckCircle2, CircleAlert, LockKeyhole, Pencil, Star, UserRound } from "lucide-react";
 
-interface CloudinaryImage {
-  url: string;
-  publicId: string;
-}
-
-interface Profile {
-  email?: string;
-  fullName?: string;
-  country?: string;
-  age?: number;
-  nin?: string;
-  state?: string;
-  localGovernment?: string;
-  address?: string;
-  credentialType?: string;
-  credentialNumber?: string;
-  position?: string;
-  strongFoot?: string;
-  heightCm?: number;
-  teamsCoached?: string[];
-  licenseNumber?: string;
-  clubName?: string;
-  clubLocation?: string;
-  club?: string;
-  transferStatus?: string;
-  goals?: number;
-  assists?: number;
-  tournaments?: number;
-  starRating?: number;
-  marketValue?: number;
-  weakFoot?: number;
-  strength?: number;
-  stamina?: number;
-  contractLength?: number;
-}
+import type { CloudinaryImage, Profile } from "@/types/profile.types";
 
 function hasValue(value: unknown) {
   return value !== undefined && value !== null && value !== "";
@@ -75,7 +41,8 @@ export function ProfileSummary({
   onEdit: () => void;
 }) {
   const { data: session, isPending } = authClient.useSession();
-   
+ console.log("profile:", profile);
+ 
   const requiredFields = [
     ["Full name", profile.fullName],
     ["Country", profile.country],
@@ -118,7 +85,7 @@ export function ProfileSummary({
               </Avatar>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-emerald-100">{role}</p>
-                <h2 className="mt-1 text-2xl font-bold">{profile.fullName || "Unnamed profile"}</h2>
+                <h2 className="mt-1 text-2xl font-bold">{profile.fullName || session?.user?.name || "Unnamed profile"}</h2>
                 <p className="mt-1 text-sm text-emerald-100">{profile.position || "Football profile"}</p>
               </div>
             </div>
@@ -156,7 +123,7 @@ export function ProfileSummary({
           </div>
           <div className="grid sm:grid-cols-2 sm:gap-x-6">
             {[...requiredFields, ...roleFields].map(([label, value]) => (
-              <InfoItem key={String(label)} label={String(label)} value={typeof value === "number" ? String(value) : value} />
+            <InfoItem key={String(label)} label={String(label)} value={typeof value === "number" ? String(value) : value} />
             ))}
           </div>
         </div>

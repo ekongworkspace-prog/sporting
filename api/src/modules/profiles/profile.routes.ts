@@ -27,9 +27,10 @@ const schemas = {
 profileRoutes.get("/:type/me", requireSession, requireProfileRole, async (request, response, next) => {
  
   try {
+    console.log("request.user: ", request.user)
     const type = profileTypeSchema.parse(request.params.type) as ProfileType;
     const profile = await getProfile(type, request.user!.id);
-    response.json({ profile });
+    response.json(profile );
   } catch (error) {
     next(error);
   }

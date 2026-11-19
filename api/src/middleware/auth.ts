@@ -3,6 +3,8 @@ import { HttpError } from "../core/errors.js";
 import { auth } from "../config/auth.js";
 
 export const requireSession: RequestHandler = async (request, _response, next) => {
+  console.log("request.headers", request.headers);
+  console.log("request.user", request.user);
   try {
     const headers = new Headers();
     for (const [key, value] of Object.entries(request.headers)) {
@@ -11,6 +13,7 @@ export const requireSession: RequestHandler = async (request, _response, next) =
     }
 
     const session = await auth.api.getSession({ headers });
+    console.log("session: ", session);
     if (!session?.user?.id) {
       return next(new HttpError(401, "Authentication required", "UNAUTHENTICATED"));
     }
