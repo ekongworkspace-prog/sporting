@@ -40,6 +40,7 @@ export async function upsertProfile(type: ProfileType, userId: string, data: Rec
     let profile;
     const update = { $set: { ...patch, userId } };
     const options = { new: true, runValidators: true, upsert: true, setDefaultsOnInsert: true };
+    console.log("upsertProfile", { type, userId, data, patch, update, options });
     if (type === "player") profile = await PlayerProfileModel.findOneAndUpdate({ userId }, update, options).lean();
     if (type === "coach") profile = await CoachProfileModel.findOneAndUpdate({ userId }, update, options).lean();
     if (type === "referee") profile = await RefereeProfileModel.findOneAndUpdate({ userId }, update, options).lean();
@@ -47,7 +48,7 @@ export async function upsertProfile(type: ProfileType, userId: string, data: Rec
     return { ...profile, nin: maskNin(profile?.nin) };
   } catch (error) {
     if ((error as { code?: number }).code === 11000) {
-      throw new HttpError(409, "NIN is already registered to another profile", "NIN_EXISTS");
+      throw new HttpError(409, `${error}`, "SERVER_ERROR");
     }
     throw error;
   }

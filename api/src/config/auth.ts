@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { getOAuthState } from "better-auth/api";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { env } from "./env.js";
 import { emailOTP } from "better-auth/plugins";
@@ -66,6 +67,35 @@ export const auth = betterAuth({
     }),
   ],
 
+  databaseHooks: {
+    user: {
+      create: {
+         before: async (user, ctx) => {
+          // Only run this logic during an OAuth callback
+          if (!ctx || ctx.path !== "/callback/:id") {
+            return;
+          }
+
+          const oauthState = await getOAuthState<{
+            callbackURL?: string;
+          }>();
+
+          const callbackURL = oauthState?.callbackURL;
+
+          // Only new users coming through the planner Google flow
+          // should receive the PLANNER role.
+          if (callbackURL?.includes("/dashboard/owner")) {
+            return {
+              data: {
+                ...user,
+                role: "OWNER",
+              },
+            };
+          }
+        },
+      },
+    },
+  },
 
   user: {
     additionalFields: {
@@ -73,7 +103,7 @@ export const auth = betterAuth({
         type: ["PLAYER", "COACH", "REFEREE", "ADMIN", "OWNER"],
         required: false,
         defaultValue: "PLAYER",
-        input: false,
+        input: true,
       },
     },
   },
