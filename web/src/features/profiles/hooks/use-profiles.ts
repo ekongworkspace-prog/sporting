@@ -1,15 +1,7 @@
-import { getProfileByRole } from "@/lib/api/profile";
+import { getProfileByRole, updateProfileByRole } from "@/lib/api/profile";
+import { Profile } from "@/types/profile.types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-// import {
-//   deletePlannerEvent,
-//   getAllEvents,
-//   getPlannerAnalytics,
-//   getPlannerEvent,
-//   getPlannerEvents,
-//   updateEvent,
-// } from "@/libs/api/events";
-// import { UpdateEventInput } from "@/types/event.types";
 
 export const useGetProfileByRole = (userRole: string) => {
   return useQuery({
@@ -20,70 +12,24 @@ export const useGetProfileByRole = (userRole: string) => {
   });
 };
 
-// export const usePlannerEvents = () => {
-//   return useQuery({
-//     queryKey: ["planner", "events"],
-//     queryFn: getPlannerEvents,
-//   });
-// };
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
 
-// export const usePlannerEvent = (eventId: string) => {
-//   return useQuery({
-//     queryKey: ["planner", "event", eventId],
-//     queryFn: () => getPlannerEvent(eventId),
-//     enabled: Boolean(eventId),
-//   });
-// };
+  return useMutation({
+    mutationFn: ({
+      body,
+      userRole,
+    }: {
+      body: Profile;
+      userRole: string;
+    }) => updateProfileByRole(body, userRole),
 
-// export const useUpdateEvent = () => {
-//   const queryClient = useQueryClient();
+    onSuccess: (_profile, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["profile", variables.body._id],
+      });
+    },
+  });
+};
 
-//   return useMutation({
-//     mutationFn: ({
-//       eventId,
-//       data,
-//     }: {
-//       eventId: string;
-//       data: UpdateEventInput;
-//     }) => updateEvent(eventId, data),
 
-//     onSuccess: (_event, variables) => {
-//       queryClient.invalidateQueries({
-//         queryKey: ["planner", "event", variables.eventId],
-//       });
-
-//       queryClient.invalidateQueries({
-//         queryKey: ["planner", "events",],
-//       });
-//        queryClient.invalidateQueries({
-//         queryKey: ["tickets", variables.eventId],
-//       });
-//     },
-//   });
-// };
-
-// export const usePlannerAnalytics = () => {
-//   return useQuery({
-//     queryKey: ["planner", "analytics"],
-//     queryFn: getPlannerAnalytics,
-//   });
-// };
-
-// export const useDeleteEvent = () => {
-//   const queryClient = useQueryClient();
-
-//   return useMutation({
-//     mutationFn: ({ eventId }: { eventId: string }) =>
-//       deletePlannerEvent(eventId),
-
-//     onSuccess: (_event, variables) => {
-//       queryClient.invalidateQueries({
-//         queryKey: ["planner", "event", variables.eventId],
-//       });
-
-//       queryClient.invalidateQueries({
-//         queryKey: ["planner", "events"],
-//       });
-//     },
-//   });
-// };

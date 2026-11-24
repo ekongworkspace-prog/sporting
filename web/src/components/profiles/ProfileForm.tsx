@@ -31,7 +31,8 @@ import {
 import { ProfileSummary } from "./ProfileSummary";
 import { ProfilePictureUpload } from "./ProfilePictureUpload";
 import type { CloudinaryImage, Profile, ProfileRole } from "@/types/profile.types";
-import { useGetProfileByRole } from "@/features/profiles/hooks/use-profiles";
+import { useGetProfileByRole, useUpdateProfile } from "@/features/profiles/hooks/use-profiles";
+import { updateProfileByRole } from "@/lib/api/profile";
 
 const nigerianStates = [
   "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue",
@@ -157,45 +158,57 @@ export function ProfileForm({ role }: { role: ProfileRole }) {
     return () => window.clearTimeout(timer);
   }, [profile]);
 
-  const saveMutation = useMutation({
-    mutationFn: (body: Record<string, unknown>) => apiFetch<{ profile: Profile }>(`/api/profiles/${role}/me`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    }),
-    onSuccess: (data) => {
-      setSaved(true);
-      setSavedProfile((current) => ({
-        ...current,
-        ...profile,
-        ...data.profile,
-        nin: data.profile.nin ?? profile?.nin ?? "",
-        credentialNumber: data.profile.credentialNumber ?? profile?.credentialNumber,
-      }));
-      setError("");
-      void queryClient.invalidateQueries({ queryKey: ["profiles", role] });
-      if (role === "owner") {
-        const emails = values.invitedPlayerEmails?.split(",").map((email) => email.trim()).filter(Boolean) ?? [];
-        if (emails.length) {
-          void apiFetch("/api/profiles/club-invitations", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({
-              clubName: values.clubName,
-              ownerName: values.fullName,
-              emails,
-            }),
-          }).catch((inviteError: Error) => setError(inviteError.message));
-        }
-      }
-    },
-    onError: (mutationError) => setError(mutationError.message),
-  });
-
-  function setValue(name: string, value: string) {
+    function setValue(name: string, value: string) {
     setValues((current) => ({ ...current, [name]: value }));
   }
+
+ const saveMutation = useMutation({
+  mutationFn: (body: Record<string, unknown>) =>
+    updateProfileByRole(body, role),
+
+  onSuccess: (data) => {
+    setSaved(true);
+
+    setSavedProfile((current) => ({
+      ...current,
+      ...profile,
+      ...data,
+      nin: data?.nin ?? profile?.nin ?? "",
+      credentialNumber:
+        data?.credentialNumber ?? profile?.credentialNumber,
+    }));
+
+    setError("");
+
+    void queryClient.invalidateQueries({
+      queryKey: ["profiles", role],
+    });
+
+    if (role === "owner") {
+      const emails =
+        values.invitedPlayerEmails
+          ?.split(",")
+          .map((email) => email.trim())
+          .filter(Boolean) ?? [];
+
+      // if (emails.length) {
+      //   void sendClubInvitations({
+      //     clubName: values.clubName,
+      //     ownerName: values.fullName,
+      //     emails,
+      //   }).catch((inviteError: Error) =>
+      //     setError(inviteError.message)
+      //   );
+      // }
+    }
+  },
+
+  onError: (mutationError: Error) => {
+    setError(mutationError.message);
+  },
+});
+
+ 
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -230,6 +243,8 @@ export function ProfileForm({ role }: { role: ProfileRole }) {
     }
     saveMutation.mutate(Object.fromEntries(Object.entries(body).filter(([, value]) => value !== undefined)));
   }
+
+ 
 
   const needsSetup = profile === null;
   const isClubRole = role === "coach" || role === "owner";
