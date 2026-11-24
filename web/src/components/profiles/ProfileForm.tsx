@@ -191,15 +191,18 @@ export function ProfileForm({ role }: { role: ProfileRole }) {
           .map((email) => email.trim())
           .filter(Boolean) ?? [];
 
-      // if (emails.length) {
-      //   void sendClubInvitations({
-      //     clubName: values.clubName,
-      //     ownerName: values.fullName,
-      //     emails,
-      //   }).catch((inviteError: Error) =>
-      //     setError(inviteError.message)
-      //   );
-      // }
+      if (emails.length) {
+          void apiFetch("/api/profiles/club-invitations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              clubName: values.clubName,
+              ownerName: values.fullName,
+              emails,
+            }),
+          }).catch((inviteError: Error) => setError(inviteError.message));
+        }
     }
   },
 
