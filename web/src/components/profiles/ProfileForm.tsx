@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { ChangeEvent, FormEvent } from "react";
+import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "@/lib/auth-client";
-import { UserRole } from "@/types/user.types";
 import {
   Alert,
   Avatar,
@@ -31,7 +30,8 @@ import {
 import { ProfileSummary } from "./ProfileSummary";
 import { ProfilePictureUpload } from "./ProfilePictureUpload";
 import type { CloudinaryImage, Profile, ProfileRole } from "@/types/profile.types";
-import { useGetProfileByRole, useUpdateProfile } from "@/features/profiles/hooks/use-profiles";
+import { useGetProfileByRole } from "@/features/profiles/hooks/use-profiles";
+import { useClubInvitations } from "@/features/club/hooks/use-club";
 import { updateProfileByRole } from "@/lib/api/profile";
 
 const nigerianStates = [
@@ -50,15 +50,6 @@ const localGovernments: Record<string, string[]> = {
   Rivers: ["Port Harcourt", "Obio-Akpor", "Eleme", "Ikwerre", "Oyigbo"],
   Oyo: ["Ibadan North", "Ibadan North-East", "Ibadan North-West", "Ibadan South-East", "Ibadan South-West", "Ogbomosho North"],
 };
-
-async function apiFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, { credentials: "include", ...init });
-  if (!response.ok) {
-    const data = await response.json().catch(() => null);
-    throw new Error(data?.error?.message ?? "Request failed");
-  }
-  return response.json() as Promise<T>;
-}
 
 function ProfileSelect({
   label,
@@ -104,6 +95,7 @@ export function ProfileForm({ role }: { role: ProfileRole }) {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const queryClient = useQueryClient();
+  const clubInvitationsMutation = useClubInvitations();
   const [step, setStep] = useState(0);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
@@ -192,17 +184,17 @@ export function ProfileForm({ role }: { role: ProfileRole }) {
           .filter(Boolean) ?? [];
 
       if (emails.length) {
-          void apiFetch("/api/profiles/club-invitations", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({
-              clubName: values.clubName,
-              ownerName: values.fullName,
-              emails,
-            }),
-          }).catch((inviteError: Error) => setError(inviteError.message));
-        }
+        clubInvitationsMutation.mutate(
+          {
+            clubName: values.clubName,
+            ownerName: values.fullName,
+            emails,
+          },
+          {
+            onError: (inviteError) => setError(inviteError.message),
+          },
+        );
+      }
     }
   },
 
