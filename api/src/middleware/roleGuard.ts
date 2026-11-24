@@ -5,8 +5,9 @@ export type Role = "player" | "coach" | "referee" | "owner" | "venue_manager" | 
 
 export function requireRole(...allowedRoles: Role[]): RequestHandler {
   return (request, _response, next) => {
+    console.log(request.user?.roles, allowedRoles)
     const roles = request.user?.roles ?? ["user"];
-    if (!roles.some((role) => allowedRoles.includes(role as Role))) {
+    if (!roles.some((role) => allowedRoles.includes(role.toLowerCase() as Role))) {
       return next(new HttpError(403, "requireRole", "requireRole"));
     }
     next();

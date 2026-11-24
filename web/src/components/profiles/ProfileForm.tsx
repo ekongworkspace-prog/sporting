@@ -180,6 +180,7 @@ export function ProfileForm({ role }: { role: ProfileRole }) {
           void apiFetch("/api/profiles/club-invitations", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            credentials: "include",
             body: JSON.stringify({
               clubName: values.clubName,
               ownerName: values.fullName,

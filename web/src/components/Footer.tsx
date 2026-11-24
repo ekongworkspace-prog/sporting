@@ -11,7 +11,7 @@ const platformLinks = [
   { href: "/dashboard/coach", label: "Coaches" },
   { href: "/dashboard/referee", label: "Referees" },
   { href: "/wallet", label: "Wallet" },
-  { href: "/knowledge-base", label: "Knowledge Base" },
+  // { href: "/knowledge-base", label: "Knowledge Base" },
 ];
 
 const companyLinks = [
