@@ -12,7 +12,9 @@ export interface UploadedImage {
 export async function uploadSingleImageToCloudinary(
   file: File
 ): Promise<UploadedImage> {
-  const signatureResponse = await fetch("/api/profiles/upload-signature", {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  const signatureResponse = await fetch(`${API_URL}/api/profiles/upload-signature`, {
     method: "POST",
     credentials: "include",
   });
